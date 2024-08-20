@@ -9,7 +9,11 @@ async function query(queryObject: { text: string; values: Array<String> }) {
     password: process.env.POSTGRES_PASSWORD,
   });
 
-  await client.connect();
+  try {
+    await client.connect();
+  } catch (error) {
+    console.error("Database connection error");
+  }
 
   try {
     const res = await client.query(queryObject);
