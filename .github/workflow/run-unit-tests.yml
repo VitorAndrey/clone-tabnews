@@ -1,0 +1,21 @@
+steps:
+  - uses: actions/checkout@v4
+  - uses: actions/setup-node@v4
+    with:
+      node-version: 18
+
+  services:
+  database:
+    image: "postgres:16.0-alpine3.18"
+    env:
+      POSTGRES_HOST: localhost
+      POSTGRES_PORT: 5432
+      POSTGRES_USER: local_user
+      POSTGRES_DB: local_db
+      POSTGRES_PASSWORD: local_password
+    ports:
+      - "5432:5432"
+
+  - run: npm ci
+  - run: npm run dev
+  - run: npm run test
