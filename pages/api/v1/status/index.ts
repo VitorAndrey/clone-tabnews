@@ -1,15 +1,26 @@
-import type { NextApiRequest, NextApiResponse } from "next";
 import database from "infra/database";
+import type { NextApiRequest as Req, NextApiResponse as Res } from "next";
 
-interface DatabaseStats {
+type ResponseData = {
+  updated_at: string;
+  dependences: {
+    database: {
+      max_connections: string;
+      opened_connections: string;
+      version: string;
+    };
+  };
+};
+
+type DatabaseStats = {
   rows: Array<{
     version: "string";
     max_connections: "string";
     opened_connections: "string";
   }>;
-}
+};
 
-async function status(req: NextApiRequest, res: NextApiResponse) {
+export default async function status(req: Req, res: Res<ResponseData>) {
   const updated_at = new Date().toISOString();
   const databaseName = process.env.POSTGRES_DB;
 
@@ -38,5 +49,3 @@ async function status(req: NextApiRequest, res: NextApiResponse) {
     },
   });
 }
-
-export default status;
