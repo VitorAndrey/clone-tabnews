@@ -1,6 +1,12 @@
 import { Client } from "pg";
 
-async function query(queryObject: { text: string; values: Array<String> }) {
+async function query({
+  query,
+  values,
+}: {
+  query: string;
+  values?: Array<String>;
+}) {
   const client = new Client({
     host: process.env.POSTGRES_HOST,
     port: Number(process.env.POSTGRES_PORT),
@@ -13,7 +19,7 @@ async function query(queryObject: { text: string; values: Array<String> }) {
   try {
     await client.connect();
 
-    const res = await client.query(queryObject);
+    const res = await client.query({ text: query, values });
     return res;
   } catch (err) {
     console.error(err);
@@ -33,5 +39,5 @@ function getSSLValues() {
       ca: process.env.POSTGRES_CA,
     };
 
-  return process.env.NODE_ENV === "development" ? false : true;
+  return process.env.NODE_ENV === "production" ? true : false;
 }

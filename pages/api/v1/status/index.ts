@@ -27,7 +27,7 @@ export default async function status(req: Req, res: Res<ResponseData>) {
   if (!databaseName) throw new Error("Database name not provided!");
 
   const { rows: databaseStats }: DatabaseStats = await database.query({
-    text: `SELECT 
+    query: `SELECT 
     current_setting('server_version') AS version,
     current_setting('max_connections')::int AS max_connections,
     (SELECT count(*)::int FROM pg_stat_activity WHERE datname = $1) AS opened_connections;
