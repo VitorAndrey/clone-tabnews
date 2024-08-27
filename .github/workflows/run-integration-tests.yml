@@ -28,7 +28,7 @@ jobs:
           cache: "npm"
 
       - run: npm install
-      - run: npx next dev
+      - run: npx next dev &
       - run: sleep 5
       - run: npm run test
         env:
