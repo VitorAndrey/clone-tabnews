@@ -2,6 +2,7 @@ import { join } from "node:path";
 import migrationRunner from "node-pg-migrate";
 import { RunMigration } from "node-pg-migrate/dist/migration";
 import type { NextApiRequest as Req, NextApiResponse as Res } from "next";
+import database from "infra/database";
 
 type ResponseData = { pendingMigrations: RunMigration[] } | { error: unknown };
 
@@ -9,10 +10,12 @@ type RunMigrationsParams = { dryRun: boolean };
 
 export default async function migrations(req: Req, res: Res<ResponseData>) {
   const { method } = req;
+  const dbClient = await database.getNewClient();
 
   if (method === "GET") {
     try {
       const { pendingMigrations } = await runMigrations({ dryRun: true });
+      await dbClient.end();
       return res.status(200).send({ pendingMigrations });
     } catch (error) {
       return res.status(500).send({ error });
@@ -22,6 +25,7 @@ export default async function migrations(req: Req, res: Res<ResponseData>) {
   if (method === "POST") {
     try {
       const { pendingMigrations } = await runMigrations({ dryRun: false });
+      await dbClient.end();
       return res
         .status(pendingMigrations.length > 0 ? 201 : 200)
         .send({ pendingMigrations });
@@ -35,11 +39,8 @@ export default async function migrations(req: Req, res: Res<ResponseData>) {
   async function runMigrations(options: RunMigrationsParams) {
     const { dryRun } = options;
 
-    if (!process.env.DATABASE_URL)
-      throw new Error("DATABASE_URL not provided!");
-
     const pendingMigrations = await migrationRunner({
-      databaseUrl: process.env.DATABASE_URL,
+      dbClient,
       migrationsTable: "pgmigrations",
       dir: join("infra", "migrations"),
       direction: "up",

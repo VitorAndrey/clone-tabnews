@@ -7,6 +7,21 @@ async function query({
   query: string;
   values?: Array<String>;
 }) {
+  let client;
+
+  try {
+    client = await getNewClient();
+    const res = await client.query({ text: query, values });
+    return res;
+  } catch (err) {
+    console.error(err);
+    throw err;
+  } finally {
+    await client?.end();
+  }
+}
+
+async function getNewClient() {
   const client = new Client({
     host: process.env.POSTGRES_HOST,
     port: Number(process.env.POSTGRES_PORT),
@@ -16,21 +31,13 @@ async function query({
     ssl: getSSLValues(),
   });
 
-  try {
-    await client.connect();
-
-    const res = await client.query({ text: query, values });
-    return res;
-  } catch (err) {
-    console.error(err);
-    throw err;
-  } finally {
-    await client.end();
-  }
+  await client.connect();
+  return client;
 }
 
 export default {
-  query: query,
+  query,
+  getNewClient,
 };
 
 function getSSLValues() {
