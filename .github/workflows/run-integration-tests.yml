@@ -27,7 +27,7 @@ jobs:
           node-version: 18
           cache: "npm"
 
-      - run: npm install
+      - run: npm ci
       - run: npx next dev &
       - run: npm run test
         env:
